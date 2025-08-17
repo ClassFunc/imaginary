@@ -1,0 +1,229 @@
+openapi: 3.0.0
+info:
+  title: Imaginary API
+  description: Fast HTTP microservice for high-level image processing.
+  version: "1.0.0"
+servers:
+  - url: http://localhost:8088
+paths:
+  /:
+    get:
+      summary: Get service version
+      responses:
+        '200':
+          description: Service versions
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  imaginary:
+                    type: string
+                  bimg:
+                    type: string
+                  libvips:
+                    type: string
+  /health:
+    get:
+      summary: Get service health and stats
+      responses:
+        '200':
+          description: Service health
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  uptime:
+                    type: number
+                  allocatedMemory:
+                    type: number
+                  totalAllocatedMemory:
+                    type: number
+                  goroutines:
+                    type: number
+                  cpus:
+                    type: number
+  /form:
+    get:
+      summary: Get HTML form for testing
+      responses:
+        '200':
+          description: HTML form
+          content:
+            text/html:
+              schema:
+                type: string
+  /info:
+    get:
+      summary: Get image metadata
+      parameters:
+        - $ref: '#/components/parameters/url'
+        - $ref: '#/components/parameters/file'
+      responses:
+        '200':
+          description: Image metadata
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ImageInfo'
+    post:
+      summary: Get image metadata from uploaded image
+      requestBody:
+        $ref: '#/components/requestBodies/Image'
+      responses:
+        '200':
+          description: Image metadata
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ImageInfo'
+  /crop:
+    get:
+      summary: Crop an image
+      parameters:
+        - $ref: '#/components/parameters/width'
+        - $ref: '#/components/parameters/height'
+        - $ref: '#/components/parameters/quality'
+        - $ref: '#/components/parameters/compression'
+        - $ref: '#/components/parameters/type'
+        - $ref: '#/components/parameters/url'
+        - $ref: '#/components/parameters/file'
+        - $ref: '#/components/parameters/force'
+        - $ref: '#/components/parameters/gravity'
+      responses:
+        '200':
+          $ref: '#/components/responses/ImageResponse'
+  /resize:
+    get:
+      summary: Resize an image
+      parameters:
+        - $ref: '#/components/parameters/width'
+        - $ref: '#/components/parameters/height'
+        - $ref: '#/components/parameters/quality'
+        - $ref: '#/components/parameters/compression'
+        - $ref: '#/components/parameters/type'
+        - $ref: '#/components/parameters/url'
+        - $ref: '#/components/parameters/file'
+        - $ref: '#/components/parameters/force'
+        - $ref: '#/components/parameters/nocrop'
+      responses:
+        '200':
+          $ref: '#/components/responses/ImageResponse'
+components:
+  schemas:
+    ImageInfo:
+      type: object
+      properties:
+        width:
+          type: integer
+        height:
+          type: integer
+        type:
+          type: string
+        space:
+          type: string
+        hasAlpha:
+          type: boolean
+        hasProfile:
+          type: boolean
+        channels:
+          type: integer
+        orientation:
+          type: integer
+  parameters:
+    width:
+      name: width
+      in: query
+      schema:
+        type: integer
+      description: Image width
+    height:
+      name: height
+      in: query
+      schema:
+        type: integer
+      description: Image height
+    quality:
+      name: quality
+      in: query
+      schema:
+        type: integer
+      description: JPEG quality
+    compression:
+      name: compression
+      in: query
+      schema:
+        type: integer
+      description: PNG compression
+    type:
+      name: type
+      in: query
+      schema:
+        type: string
+        enum: [jpeg, png, webp, auto]
+      description: Image output type
+    url:
+      name: url
+      in: query
+      schema:
+        type: string
+      description: Remote image URL
+    file:
+      name: file
+      in: query
+      schema:
+        type: string
+      description: Local image file path
+    force:
+      name: force
+      in: query
+      schema:
+        type: boolean
+      description: Force transformation
+    gravity:
+      name: gravity
+      in: query
+      schema:
+        type: string
+        enum: [north, south, centre, west, east, smart]
+      description: Crop gravity
+    nocrop:
+      name: nocrop
+      in: query
+      schema:
+        type: boolean
+      description: Disable crop
+  requestBodies:
+    Image:
+      content:
+        image/*:
+          schema:
+            type: string
+            format: binary
+        multipart/form-data:
+          schema:
+            type: object
+            properties:
+              file:
+                type: string
+                format: binary
+  responses:
+    ImageResponse:
+      description: Successful image transformation
+      content:
+        image/jpeg: {}
+        image/png: {}
+        image/webp: {}
+      headers:
+        Error:
+          schema:
+            type: string
+          description: Error message in case of failure with placeholder
+  securitySchemes:
+    ApiKey:
+      type: apiKey
+      in: header
+      name: API-Key
+security:
+  - ApiKey: []
