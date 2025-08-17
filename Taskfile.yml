@@ -3,4 +3,4 @@ version: 3
 tasks:
   docs:upload:
     cmds:
-      - gsutil -m cp -r ./openapi.yaml gs://cf-akasach_docs/imaginary/
+      - gsutil -m cp -r ./openapi.* gs://cf-akasach_docs/imaginary/
